@@ -39,32 +39,58 @@ def most_likely_common_ancestor(strings):
         ancestor += [x for x,y in table[i].items() if y == max_val][0]
     return ancestor
 
-data = '''>Rosalind_1
-ATCCAGCT
->Rosalind_2
-GGGCAACT
->Rosalind_3
-ATGGATCT
->Rosalind_4
-AAGCAACC
->Rosalind_5
-TTGGAACT
->Rosalind_6
-ATGCCATT
->Rosalind_7
-ATGGCACT'''
+############################################### superstring
+
+def overlap(a, b):
+    best = 0
+    for i in range(1, min(len(a), len(b))+1):
+        if b.startswith(a[-i:]):
+            best = i
+    return best
+
+def merge(first_word, second_word, overlap):
+    return first_word + second_word[overlap:]
+
+def is_first_word(word, words):
+    for j in range(len(words)):
+        if word != words[j]:
+            over = overlap(words[j], word)
+            if over > len(word)/2 and over > len(words[j])/2:
+                return False
+    return True
+
+def get_first_word(words):
+    for i in range(len(words)):
+        if is_first_word(words[i], words):
+            return words[i]
+
+def get_next_word(word, words):
+    for j in range(len(words)):
+        over = overlap(word, words[j])
+        if over > len(word)/2 and over > len(words[j])/2:
+
+            return words[j]
+
+def min_super_string(words):
+    first = get_first_word(words)
+    super_string = first
+    words.remove(first)
+    last_added = first
+    while len(words) > 0:
+        next_word = get_next_word(last_added, words)
+        words.remove(next_word)
+        super_string = merge(super_string, next_word, overlap(last_added, next_word))
+        last_added = next_word
+
+    return super_string
+
+
+data = ''''''
 
 data_dict = fasta_to_dict(data)
-table = create_most_likely_common_ancestor_table([data_dict[key] for key in data_dict])
-ancestor = most_likely_common_ancestor([data_dict[key] for key in data_dict])
+data = [data_dict[key] for key in data_dict]
 
-print(ancestor)
+super_str = min_super_string(data)
 
-for nuc in ["A", "C", "G", "T"]:
-    string = ""
-    for i in range(len(table)):
-        string += str(table[i][nuc]) + " "
-
-    print(nuc + ":", string)
-
+print(super_str)
 
