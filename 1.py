@@ -8,6 +8,15 @@ def cg_content(str):
 
     return (dict["C"] + dict["G"])/len(str) * 100
 
+def fasta_to_list(data):
+    res = []
+    for line in data.split("\n"):
+        if (re.findall(r'Rosalind', line)):
+            res.append("")
+        else:
+            res[len(res)-1] += line
+    return res
+
 def fasta_to_dict(data):
     dict = {}
     last_line = ""
@@ -157,31 +166,53 @@ def get_error_correction(reas):
 
     return result
 
-data = '''>Rosalind_52
-TCATC
->Rosalind_44
-TTCAT
->Rosalind_68
-TCATC
->Rosalind_28
-TGAAA
->Rosalind_95
-GAGGA
->Rosalind_66
-TTTCA
->Rosalind_33
-ATCAA
->Rosalind_21
-TTGAT
->Rosalind_18
-TTTCC'''
+def dna_to_rna(dna):
+    return dna.replace("T", "U")
 
-data_dict = fasta_to_dict(data)
+def rna_to_protein(rna):
+    rep = {"UUU": "F", "CUU": "L", "AUU": "I", "GUU": "V",
+           "UUC": "F", "CUC": "L", "AUC": "I", "GUC": "V",
+           "UUA": "L", "CUA": "L", "AUA": "I", "GUA": "V",
+           "UUG": "L", "CUG": "L", "AUG": "M", "GUG": "V",
+           "UCU": "S", "CCU": "P", "ACU": "T", "GCU": "A",
+           "UCC": "S", "CCC": "P", "ACC": "T", "GCC": "A",
+           "UCA": "S", "CCA": "P", "ACA": "T", "GCA": "A",
+           "UCG": "S", "CCG": "P", "ACG": "T", "GCG": "A",
+           "UAU": "Y", "CAU": "H", "AAU": "N", "GAU": "D",
+           "UAC": "Y", "CAC": "H", "AAC": "N", "GAC": "D",
+           "UAA": "Stop", "CAA": "Q", "AAA": "K", "GAA": "E",
+           "UAG": "Stop", "CAG": "Q", "AAG": "K", "GAG": "E",
+           "UGU": "C", "CGU": "R", "AGU": "S", "GGU": "G",
+           "UGC": "C", "CGC": "R", "AGC": "S", "GGC": "G",
+           "UGA": "Stop", "CGA": "R", "AGA": "R", "GGA": "G",
+           "UGG": "W", "CGG": "R", "AGG": "R", "GGG": "G"}
 
-reads = [data_dict[key] for key in data_dict]
+    res = ""
+    for i in range(0, len(rna), 3):
+        res += rep[rna[i:i+3]]
 
-correction = get_error_correction(reads)
+    return res
 
-for item in correction:
-    print("{0}->{1}".format(item[0], item[1]))
+def rna_splicing(dna, introns):
+    new_dna = dna
+    for intron in introns:
+        new_dna = new_dna.replace(intron, "")
+
+    rna = dna_to_rna(new_dna)
+    proteins = rna_to_protein(rna).replace("Stop", "")
+    return proteins
+
+
+data = '''>Rosalind_10
+ATGGTCTACATAGCTGACAAACAGCACGTAGCAATCGGTCGAATCTCGAGAGGCATATGGTCACATGATCGGTCGAGCGTGTTTCAAAGTTTGCGCCTAG
+>Rosalind_12
+ATCGGTCGAA
+>Rosalind_15
+ATCGGTCGAGCGTGT'''
+
+reads = fasta_to_list(data)
+
+#reads = [data_dict[key] for key in data_dict]
+
+print(rna_splicing(reads[0], reads[1:]))
 
