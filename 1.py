@@ -113,6 +113,75 @@ def protein_mass(protein):
         weight += weights[amino]
     return weight
 
-data = ''''''
+def get_complement(dna):
+    complement = { "A" : "T", "T" : "A", "C" : "G", "G" : "C"}
 
-print(protein_mass("SKADYEK"))
+    result = ""
+    for nuc in dna:
+        result += complement[nuc]
+
+    return result[::-1]
+
+
+def get_correct_reads(all_reads):
+    correct_reads = []
+
+    for i in range(len(all_reads)):
+        for j in range(i+1, len(all_reads)):
+            if all_reads[i] == all_reads[j]:
+                correct_reads.append(all_reads[i])
+
+            if get_complement(all_reads[i]) == all_reads[j]:
+                correct_reads.append(all_reads[i])
+                correct_reads.append(all_reads[j])
+
+    return correct_reads
+
+def hamming_disstance(s1, s2):
+    assert len(s1) == len(s2)
+    return sum(c1 != c2 for c1, c2 in zip(s1, s2))
+
+def get_error_correction(reas):
+    correct = get_correct_reads(reads)
+    incorrect_reads = set(reads) - set(correct)
+    result = []
+
+    for incorrect_read in incorrect_reads:
+        for read in correct:
+            if hamming_disstance(incorrect_read, read) == 1:
+                result.append((incorrect_read, read))
+                break
+            if hamming_disstance(incorrect_read, get_complement(read)) == 1:
+                result.append((incorrect_read, get_complement(read)))
+                break
+
+    return result
+
+data = '''>Rosalind_52
+TCATC
+>Rosalind_44
+TTCAT
+>Rosalind_68
+TCATC
+>Rosalind_28
+TGAAA
+>Rosalind_95
+GAGGA
+>Rosalind_66
+TTTCA
+>Rosalind_33
+ATCAA
+>Rosalind_21
+TTGAT
+>Rosalind_18
+TTTCC'''
+
+data_dict = fasta_to_dict(data)
+
+reads = [data_dict[key] for key in data_dict]
+
+correction = get_error_correction(reads)
+
+for item in correction:
+    print("{0}->{1}".format(item[0], item[1]))
+
