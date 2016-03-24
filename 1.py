@@ -192,9 +192,15 @@ def dna_to_rna(dna):
 def rna_to_protein(rna):
     res = ""
     for i in range(0, len(rna), 3):
-        res += rna_to_protein_dict[rna[i:i+3]]
+        if len(rna[i:i+3]) != 3:
+            return
+        prot = rna_to_protein_dict[rna[i:i+3]]
+        if prot == "Stop":
+            return res
+        else:
+            res += prot
 
-    return res
+    return
 
 
 def rna_splicing(dna, introns):
@@ -222,14 +228,30 @@ def nCr(n,r):
     f = math.factorial
     return f(n) / f(n-r)
 
+def get_all_proteins_from_dna(dna):
+    rna = dna_to_rna(dna)
+    start_codon = "AUG"
 
-data = '''>Rosalind_10
-ATGGTCTACATAGCTGACAAACAGCACGTAGCAATCGGTCGAATCTCGAGAGGCATATGGTCACATGATCGGTCGAGCGTGTTTCAAAGTTTGCGCCTAG
->Rosalind_12
-ATCGGTCGAA
->Rosalind_15
-ATCGGTCGAGCGTGT'''
+    protein_starts = [a.start() for a in list(re.finditer(start_codon, rna))]
+
+    proteins = []
+    for start in protein_starts:
+        prot = rna_to_protein(rna[start:])
+        if prot is not None:
+            proteins.append(prot)
+
+    return proteins
 
 
-print(nCr(81, 9) % 1000000)
+data = '''AGCCATGTAGCTAACTCAGGTTACATGGGGATGACCCCGCGACTTGGATTAGAGTCTCTTTTGGAATAAGCCTGAATGATCCGAGTAGCATCTCAG'''
 
+proteins = get_all_proteins_from_dna(data)
+proteins += get_all_proteins_from_dna(get_complement(data))
+
+s = set()
+print(proteins)
+for prot in proteins:
+    s.add(prot)
+
+for prot in s:
+    print(prot)
