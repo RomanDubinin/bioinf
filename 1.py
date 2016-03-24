@@ -260,17 +260,12 @@ def get_all_k_mers(string, k):
         k_mers.append(string[i:i+k])
     return set(k_mers)
 
-data = '''>Rosalind_6431
-CTTCGAAAGTTTGGGCCGAGTCTTACAGTCGGTCTTGAAGCAAAGTAACGAACTCCACGG
-CCCTGACTACCGAACCAGTTGTGAGTACTCAACTGGGTGAGAGTGCAGTCCCTATTGAGT
-TTCCGAGACTCACCGGGATTTTCGATCCAGCCTCAGTCCAGTCTTGTGGCCAACTCACCA
-AATGACGTTGGAATATCCCTGTCTAGCTCACGCAGTACTTAGTAAGAGGTCGCTGCAGCG
-GGGCAAGGAGATCGGAAAATGTGCTCTATATGCGACTAAAGCTCCTAACTTACACGTAGA
-CTTGCCCGTGTTAAAAACTCGGCTCACATGCTGTCTGCGGCTGGCTGTATACAGTATCTA
-CCTAATACCCTTCAGTTCGCCGCACAAAAGCTGGGAGTTACCGCGGAAATCACAG'''
+def alphabet_combinations(alphabet, n, acc='', res=[]):
+    if n > 0:
+        for c in alphabet:
+            res.append(acc + c)
+            alphabet_combinations(alphabet, n - 1, acc + c, res)
+    return res
 
-data = fasta_to_list(data)
 
-sorted_k_mers = k_mers_lexicographically("A C G T".split(" "), 4)
-
-print(" ".join([str(number_of_times_pattern_appears_in_text(data[0], k_mer)) for k_mer in sorted_k_mers]))
+print("\n".join(alphabet_combinations("T F B A U S N Q L I".split(" "), 4)))
