@@ -248,7 +248,8 @@ def k_mers_lexicographically(alphabet, k):
     for word in product:
         print("".join(letter for letter in word))
 
-k = 3
-alphabet = "O V Y G R K J".split(" ")
+def number_of_times_pattern_appears_in_text(text, pattern):
+    return len(list(re.finditer("(?={0})".format(pattern), text)))
 
-k_mers_lexicographically(alphabet, k)
+
+print(number_of_times_pattern_appears_in_text("GCGCG", "GCG"))
