@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 import math
-
+import itertools
 
 rna_to_protein_dict = {"UUU": "F",    "CUU": "L", "AUU": "I", "GUU": "V",
                        "UUC": "F",    "CUC": "L", "AUC": "I", "GUC": "V",
@@ -243,15 +243,12 @@ def get_all_proteins_from_dna(dna):
     return proteins
 
 
-data = '''AGCCATGTAGCTAACTCAGGTTACATGGGGATGACCCCGCGACTTGGATTAGAGTCTCTTTTGGAATAAGCCTGAATGATCCGAGTAGCATCTCAG'''
+def k_mers_lexicographically(alphabet, k):
+    product = itertools.product(alphabet, repeat = k)
+    for word in product:
+        print("".join(letter for letter in word))
 
-proteins = get_all_proteins_from_dna(data)
-proteins += get_all_proteins_from_dna(get_complement(data))
+k = 3
+alphabet = "O V Y G R K J".split(" ")
 
-s = set()
-print(proteins)
-for prot in proteins:
-    s.add(prot)
-
-for prot in s:
-    print(prot)
+k_mers_lexicographically(alphabet, k)
