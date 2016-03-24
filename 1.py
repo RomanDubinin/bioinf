@@ -245,11 +245,32 @@ def get_all_proteins_from_dna(dna):
 
 def k_mers_lexicographically(alphabet, k):
     product = itertools.product(alphabet, repeat = k)
+    k_mers = []
     for word in product:
-        print("".join(letter for letter in word))
+        k_mers.append("".join(letter for letter in word))
+
+    return k_mers
 
 def number_of_times_pattern_appears_in_text(text, pattern):
     return len(list(re.finditer("(?={0})".format(pattern), text)))
 
+def get_all_k_mers(string, k):
+    k_mers = []
+    for i in range(len(string) - k + 1):
+        k_mers.append(string[i:i+k])
+    return set(k_mers)
 
-print(number_of_times_pattern_appears_in_text("GCGCG", "GCG"))
+data = '''>Rosalind_6431
+CTTCGAAAGTTTGGGCCGAGTCTTACAGTCGGTCTTGAAGCAAAGTAACGAACTCCACGG
+CCCTGACTACCGAACCAGTTGTGAGTACTCAACTGGGTGAGAGTGCAGTCCCTATTGAGT
+TTCCGAGACTCACCGGGATTTTCGATCCAGCCTCAGTCCAGTCTTGTGGCCAACTCACCA
+AATGACGTTGGAATATCCCTGTCTAGCTCACGCAGTACTTAGTAAGAGGTCGCTGCAGCG
+GGGCAAGGAGATCGGAAAATGTGCTCTATATGCGACTAAAGCTCCTAACTTACACGTAGA
+CTTGCCCGTGTTAAAAACTCGGCTCACATGCTGTCTGCGGCTGGCTGTATACAGTATCTA
+CCTAATACCCTTCAGTTCGCCGCACAAAAGCTGGGAGTTACCGCGGAAATCACAG'''
+
+data = fasta_to_list(data)
+
+sorted_k_mers = k_mers_lexicographically("A C G T".split(" "), 4)
+
+print(" ".join([str(number_of_times_pattern_appears_in_text(data[0], k_mer)) for k_mer in sorted_k_mers]))
