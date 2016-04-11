@@ -267,6 +267,18 @@ def alphabet_combinations(alphabet, n, acc='', res=[]):
             alphabet_combinations(alphabet, n - 1, acc + c, res)
     return res
 
+def find_any_spliced_motif(text, pattern):
+    pattern_index = 0
+    res = []
+    for i in range(len(text)):
+        if text[i] == pattern[pattern_index]:
+            res.append(i)
+            pattern_index += 1
+            if pattern_index == len(pattern):
+                return res
+
+    return []
+
 def CheckClumpLength(indicies, t, l):
     '''Checks that a given set of t k-mers falls within a clump of size L.'''
     for i in  range(len(indicies)-t+1):
@@ -303,39 +315,3 @@ dna = ""
 kmer_clumps = find_clums(dna, k, l, t)
 
 print(' '.join(kmer_clumps))
-
-def find_any_spliced_motif(text, pattern):
-    pattern_index = 0
-    res = []
-    for i in range(len(text)):
-        if text[i] == pattern[pattern_index]:
-            res.append(i)
-            pattern_index += 1
-            if pattern_index == len(pattern):
-                return res
-
-    return []
-
-
-data = '''>Rosalind_8267
-TTTCCGGAATTCTATATGACTACATACATAAGCGTAAGCTCCTCGAATCTAGGATCCACT
-ATGATTTAGACCGTGATGTCGTGATGCTTCTGTGGTTACCGGCATAGGCGGCGTAGTTAA
-CCGAGGCGTAAAGCACTGACACCTATCATCTACGATCCTATAACCCACTCGCCGCGGTTC
-GAGGATCTCCGTCTCAGAGCTATACAACTGTACGAACTTATACGAACCAAAACGGCGCTT
-CTCATTTGGTTGTTCACTTCAGGACGTTAGCTCATGAATGAGGGTTCTCACATTGGTGCC
-ATGCGTCGGTCGCTTCAGAAGTCGACCAACATAAAGCTAGCGCAGGTAGCCATTCGTAAA
-GAGAGTAATCTATTGTCTACACTATATTTATATAGCCCCGTAGAGCGGCAAACCCTAAGT
-CTCGAATAGCCGAGGATTGATCCTTTTAAATCGGCAGGAGCGCTACTTAAGTCTGCTTAG
-AGAGTTCCTGGGACGTGCCGGTCAGGTTTCTCAGCAAGTGCCGTACTACTCTGCTCCCAT
-TGTCCTGCGTGAAGTGTTAGGCTATTTCAAACTCAGGTTGTCGAACGTGGGCGGGAGGTC
-TGGCGCTGCCCTTGAACGCTTCATCGTCCTTCAAAATCATGTATTAATAGGTTGTAACAA
-GACCGTCTGAGGGTTGCCATTCGACGCGGGATGTTCGTTATTACAGTTCGAGCAAACTAG
-AAAAAGCGCAGGTTGGTGCCATAGCAAGCTGGAATCGTCTGAGCGAAGAAGGTAACTAAA
-GCCGTTTCCAATTATAGACAAGATGGCC
->Rosalind_6751
-ATCTCTACGGAAAGTTTTGCTATGTCTGACGTCTGGACGCTCGTACTTTCATGACGTCTG
-GTCT'''
-
-data = fasta_to_list(data)
-
-print(" ".join([str(x+1) for x in find_any_spliced_motif(data[0], data[1])]))
