@@ -306,12 +306,51 @@ def find_clums(dna, k, l, t):
 
     return kmer_clumps
 
-k = 9
-l = 570
-t = 17
+def kmer_mismatches(kmer, d):
+    """Returns all k-mers that are within d mismatches of the given k-mer."""
+    mismatches = [kmer]  # Initialize mismatches with the k-mer itself (i.e. d=0).
+    alt_bases = {'A':'CGT', 'C':'AGT', 'G':'ACT', 'T':'ACG'}
+    for dist in range(1, d+1):
+        for change_indices in itertools.combinations(range(len(kmer)), dist):
+            for substitutions in itertools.product(*[alt_bases[kmer[i]] for i in change_indices]):
+                new_mistmatch = list(kmer)
+                for idx, sub in zip(change_indices, substitutions):
+                    new_mistmatch[idx] = sub
+                mismatches.append(''.join(new_mistmatch))
+    return mismatches
 
-dna = ""
 
-kmer_clumps = find_clums(dna, k, l, t)
+def most_freq_words_with_mismatches(dna, k, d):
+    max_ = 0
+    kmer_freq = {}
 
-print(' '.join(kmer_clumps))
+    for i in range(0, len(dna) - k + 1):
+        k_mer = dna[i:i+k]
+        for mismatch in kmer_mismatches(k_mer, d):
+            if mismatch in kmer_freq:
+                kmer_freq[mismatch] += 1
+                if kmer_freq[mismatch] > max_:
+                    max_ = kmer_freq[mismatch]
+            else:
+                kmer_freq[mismatch] = 1
+    res = []
+    for key in kmer_freq:
+        if kmer_freq[key] == max_:
+            res.append(key)
+
+    return res
+
+
+
+dna = "AGCAAGGCAGCTCACTCTTAGAGTTC"
+k = 7
+d = 2
+
+res = most_freq_words_with_mismatches(dna, k, d)
+
+
+print(" ".join(res))
+
+
+
+
