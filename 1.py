@@ -320,8 +320,8 @@ def kmer_mismatches(kmer, d):
     return mismatches
 
 
-def most_freq_words_with_mismatches(dna, k, d):
-    max_ = 0
+def frequencies_words_with_mismatches(dna, k, d):
+    
     kmer_freq = {}
 
     for i in range(0, len(dna) - k + 1):
@@ -329,25 +329,42 @@ def most_freq_words_with_mismatches(dna, k, d):
         for mismatch in kmer_mismatches(k_mer, d):
             if mismatch in kmer_freq:
                 kmer_freq[mismatch] += 1
-                if kmer_freq[mismatch] > max_:
-                    max_ = kmer_freq[mismatch]
             else:
                 kmer_freq[mismatch] = 1
-    res = []
-    for key in kmer_freq:
-        if kmer_freq[key] == max_:
-            res.append(key)
 
-    return res
+    return kmer_freq
 
 
 
-dna = "AGCAAGGCAGCTCACTCTTAGAGTTC"
-k = 7
-d = 2
 
-res = most_freq_words_with_mismatches(dna, k, d)
+dna = "TAACTTTGGGTAACTTTGGGCGTGGAGCGCTTCAAAACGTGGAGCGTTTCAGAAGAAGACACACTCGTGGAGCGCTTCAAAATAACTTTGGGAAGACACACTAAGACACACTAAGACACACTGTTTCAGAAGGTTTCAGAAGGCTTCAAAATAACTTTGGGCGTGGAGCCGTGGAGCGTTTCAGAAGGCTTCAAAACGTGGAGCGTTTCAGAAGAAGACACACTTAACTTTGGGCGTGGAGCGTTTCAGAAGAAGACACACTAAGACACACTGCTTCAAAAGTTTCAGAAGTAACTTTGGGGTTTCAGAAGGTTTCAGAAGGCTTCAAAAGTTTCAGAAGGTTTCAGAAGTAACTTTGGGAAGACACACTCGTGGAGCTAACTTTGGGCGTGGAGCGTTTCAGAAGCGTGGAGCGTTTCAGAAGGTTTCAGAAGGCTTCAAAAGTTTCAGAAGGCTTCAAAAAAGACACACTCGTGGAGCCGTGGAGCGTTTCAGAAGTAACTTTGGGGCTTCAAAAGTTTCAGAAGTAACTTTGGGGTTTCAGAAGCGTGGAGCCGTGGAGCTAACTTTGGGGTTTCAGAAGGTTTCAGAAGCGTGGAGCCGTGGAGCGCTTCAAAATAACTTTGGGAAGACACACTTAACTTTGGGGCTTCAAAATAACTTTGGGGTTTCAGAAGGCTTCAAAACGTGGAGCGTTTCAGAAGTAACTTTGGGGTTTCAGAAGGCTTCAAAAGCTTCAAAACGTGGAGCGCTTCAAAAAAGACACACTAAGACACACTTAACTTTGGGGTTTCAGAAGGTTTCAGAAGTAACTTTGGGAAGACACACTGTTTCAGAAGTAACTTTGGGAAGACACACTAAGACACACTGCTTCAAAATAACTTTGGGCGTGGAGCGTTTCAGAAGGCTTCAAAACGTGGAGCGCTTCAAAAAAGACACACTGCTTCAAAACGTGGAGCGTTTCAGAAG"
+k = 5
+d = 3
 
+freq1 = frequencies_words_with_mismatches(dna, k, d)
+freq2 = frequencies_words_with_mismatches(get_complement(dna), k, d)
+
+freq3 = {}
+
+max_ = 0
+
+for key in freq1:
+    freq3[key] = freq1[key]
+
+for key in freq2:
+    if key in freq3:
+        freq3[key] += freq2[key]
+    else:
+        freq3[key] = freq2[key]
+    if freq3[key] > max_:
+        max_ = freq3[key]
+
+res = []
+for key in freq3:
+    if freq3[key] == max_:
+        res.append(key)
+
+print(max_)
 
 print(" ".join(res))
 
