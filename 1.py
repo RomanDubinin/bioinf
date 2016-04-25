@@ -2,6 +2,7 @@ import re
 from collections import defaultdict
 import math
 import itertools
+from functools import reduce
 
 rna_to_protein_dict = {"UUU": "F",    "CUU": "L", "AUU": "I", "GUU": "V",
                        "UUC": "F",    "CUC": "L", "AUC": "I", "GUC": "V",
@@ -342,9 +343,49 @@ def mendel_second_law(k, n):
 
 
 
-from scipy.misc import comb
+def all_k_d_motifs_shared_for_all_dnas(k, d, dna_list):
+    # Generate sets of (k,d)-motifs for each dna sequence in the list.
+    motif_sets = [{kmer for i in range(len(dna)-k+1) for kmer in kmer_mismatches(dna[i:i+k], d)} for dna in dna_list]
 
-k = 5
-n = 7
+    # Intersect all sets to get the common elements.  The answers are displayed as sorted, so we'll sort too.
+    return sorted(list(reduce(lambda a,b: a & b, motif_sets)))
 
-print(mendel_second_law(k, n))
+
+def profile_most_probable_kmer(dna, k, profile):
+    nuc_loc = {"A": 0,
+               "C": 1,
+               "G": 2,
+               "T": 3}
+
+    max_probability = -1
+
+    for i in range(len(dna)-k+1):
+        # Get the current probability.
+        current_probability = 1
+        for j, nucleotide in enumerate(dna[i:i+k]):
+            current_probability *= profile[nuc_loc[nucleotide]][j]
+
+        # Check for a maximum.
+        if current_probability > max_probability:
+            max_probability = current_probability
+            most_probable = dna[i:i+k]
+
+    return most_probable
+
+
+
+dna = '''ACAGGTCTTAAAGAAGTTTAGTGAGCATGGCTAGGCGTCGATATCAATGGATGCTAGCAGACCAAAACATTGCTCTATCCGAGGAGACATACTTAAAGGACGCTCCTCTATACAGGGGGAAGTAGTGACCGATCTTTCGATATAAGTCACGTGCCAGGGCGCACGTCTGGACTGCTAAAGATCAGAATTACAATAGCTAG'''
+k = 8
+profile = '''0.36 0.28 0.16 0.36 0.32 0.24 0.2 0.28
+0.24 0.28 0.28 0.24 0.08 0.32 0.28 0.28
+0.2 0.16 0.28 0.2 0.28 0.32 0.24 0.24
+0.2 0.28 0.28 0.2 0.32 0.12 0.28 0.2'''.split("\n")
+for i in range(len(profile)):
+    profile[i] = profile[i].split(" ")
+    for j in range(len(profile[i])):
+        print(profile[i][j])
+        profile[i][j] = float(profile[i][j])
+
+res = profile_most_probable_kmer(dna, k, profile)
+print(res)
+
