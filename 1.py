@@ -374,18 +374,45 @@ def profile_most_probable_kmer(dna, k, profile):
 
 
 
-dna = '''ACAGGTCTTAAAGAAGTTTAGTGAGCATGGCTAGGCGTCGATATCAATGGATGCTAGCAGACCAAAACATTGCTCTATCCGAGGAGACATACTTAAAGGACGCTCCTCTATACAGGGGGAAGTAGTGACCGATCTTTCGATATAAGTCACGTGCCAGGGCGCACGTCTGGACTGCTAAAGATCAGAATTACAATAGCTAG'''
-k = 8
-profile = '''0.36 0.28 0.16 0.36 0.32 0.24 0.2 0.28
-0.24 0.28 0.28 0.24 0.08 0.32 0.28 0.28
-0.2 0.16 0.28 0.2 0.28 0.32 0.24 0.24
-0.2 0.28 0.28 0.2 0.32 0.12 0.28 0.2'''.split("\n")
-for i in range(len(profile)):
-    profile[i] = profile[i].split(" ")
-    for j in range(len(profile[i])):
-        print(profile[i][j])
-        profile[i][j] = float(profile[i][j])
 
-res = profile_most_probable_kmer(dna, k, profile)
+def score(motifs):
+    columns = [''.join(seq) for seq in zip(*motifs)]
+    max_count = sum([max([c.count(nucleotide) for nucleotide in 'ACGT']) for c in columns])
+    return len(motifs[0])*len(motifs) - max_count
+
+
+def profile(motifs):
+    columns = [''.join(seq) for seq in zip(*motifs)]
+    return [[float(col.count(nuc)) / float(len(col)) for col in columns] for nuc in 'ACGT']
+
+
+def greedy_motif_search(dna_list, k, t):
+    best_score = t*k
+
+    for i in range(len(dna_list[0])-k+1):
+        motifs = [dna_list[0][i:i+k]]
+
+        for j in range(1, t):
+            current_profile = profile(motifs)
+            motifs.append(profile_most_probable_kmer(dna_list[j], k, current_profile))
+
+        current_score = score(motifs)
+        if current_score < best_score:
+            best_score = current_score
+            best_motifs = motifs
+
+    return best_motifs
+
+
+
+dna = '''GGCGTTCAGGCA
+AAGAATCAGTCA
+CAAGGAGTTCGC
+CACGTCAATCAC
+CAATAATATTCG'''.split("\n")
+k = 3
+t = 5
+
+res = greedy_motif_search(dna, k, t)
 print(res)
 
