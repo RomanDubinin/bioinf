@@ -227,7 +227,7 @@ namespace bioinf
 			return count;
 		}
 
-		static Dictionary<string, Dictionary<string, double>> CreateTransitionMatrix(List<string> alignedStrings, double threshold)
+		static List<TransitionDataColumn> CreateInnerViewOfAlignedStrings(List<string> alignedStrings, double threshold)
 		{
 			var n = alignedStrings.Count;
 			var strLen = alignedStrings[0].Length;
@@ -242,7 +242,7 @@ namespace bioinf
 			data.Add(new TransitionDataColumn());
 			for (var i = 0; i < strLen; i++)
 			{
-				if (transposeStrings[i].Count(x => x == '-')/Convert.ToDouble(n) < threshold)
+				if (transposeStrings[i].Count(x => x == '-') / Convert.ToDouble(n) < threshold)
 				{
 					data.Add(new TransitionDataColumn());
 					data.Last().Match = transposeStrings[i].ToList();
@@ -251,7 +251,16 @@ namespace bioinf
 				{
 					data.Last().Insertion.Add(transposeStrings[i].ToList());
 				}
-            }
+			}
+			return data;
+		}
+
+		static Dictionary<string, Dictionary<string, double>> CreateTransitionMatrix(List<string> alignedStrings, double threshold)
+		{
+			var n = alignedStrings.Count;
+			var strLen = alignedStrings[0].Length;
+
+			var data = CreateInnerViewOfAlignedStrings(alignedStrings, threshold);
 
 			var fullRange = new List<int>();
 			for (var i = 0; i < n; i++)
@@ -408,10 +417,51 @@ namespace bioinf
 			return transition;
 		}
 
+		static Dictionary<string, Dictionary<char, double>> CreateEmptyEmissionMatrix(int strLen, List<char> alphabet)
+		{
+			var emission = new Dictionary<string, Dictionary<char, double>>();
+			emission.Add("S", new Dictionary<char, double>());
+			emission.Add("I0", new Dictionary<char, double>());
+			for (var i = 1; i <= strLen; i++)
+			{
+				emission.Add($"M{i}", new Dictionary<char, double>());
+				emission.Add($"D{i}", new Dictionary<char, double>());
+				emission.Add($"I{i}", new Dictionary<char, double>());
+			}
+			emission.Add("E", new Dictionary<char, double>());
+
+			foreach (var value in emission.Values)
+			{
+				foreach (var c in alphabet)
+				{
+					value.Add(c, 0);
+				}
+				
+			}
+			return emission;
+		}
+
+		static Dictionary<string, Dictionary<char, double>> CreateEmissionMatrix(
+			List<string> alignedStrings, 
+			double threshold,
+			List<char> alphabet)
+		{
+			var n = alignedStrings.Count;
+			var strLen = alignedStrings[0].Length;
+
+			var data = CreateInnerViewOfAlignedStrings(alignedStrings, threshold);
+
+			var emission = CreateEmptyEmissionMatrix(data.Count - 1, alphabet);
+
+			return emission;
+
+		}
+
 		static void Main(string[] args)
 		{
 			var strings = "DCDABACED.DCCA--CA-.DCDAB-CA-.BCDA---A-.BC-ABE-AE";
-			var matrix = CreateTransitionMatrix(strings.Split('.').ToList(), 0.252);
+			var threshold = 0.252;
+            var matrix = CreateTransitionMatrix(strings.Split('.').ToList(), threshold);
 			using (StreamWriter writetext = new StreamWriter("write.txt"))
 			{
 				writetext.Write($" \t");
@@ -431,7 +481,9 @@ namespace bioinf
 					writetext.WriteLine();
 				}
 			}
-			
+
+			var emission = CreateEmissionMatrix(strings.Split('.').ToList(), threshold, new List<char>() {'A', 'B', 'C', 'D', 'E'});
+
 		}
 	}
 }
