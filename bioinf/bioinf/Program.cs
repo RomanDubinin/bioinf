@@ -539,15 +539,55 @@ namespace bioinf
 			return transitionСopy;
 		}
 
+		static Dictionary<string, Dictionary<char, double>> AddPseudocountsToEmissionMatrix(
+			Dictionary<string, Dictionary<char, double>> emission, 
+			double minVal)
+		{
+			var emissionСopy = ExtensionMethods.DeepClone(emission);
+			var n = (emissionСopy.Keys.Count - 3) / 3;
+			var alphabet = emissionСopy["S"].Keys;
+
+			var sum = 0.0;
+			foreach (var character in alphabet)
+			{
+				if (Math.Abs(emissionСopy["I0"][character]) < minVal)
+					emissionСopy["I0"][character] = minVal;
+				sum += emissionСopy["I0"][character];
+			}
+			foreach (var character in alphabet)
+			{
+				emissionСopy["I0"][character] /= sum;
+			}
+
+				for (var i = 1; i <= n; i++)
+			{
+				foreach (var state in new List<char>() {'I', 'M'})
+				{
+					sum = 0.0;
+					foreach (var character in alphabet)
+					{
+						if (Math.Abs(emissionСopy[$"{state}{i}"][character]) < minVal)
+							emissionСopy[$"{state}{i}"][character] = minVal;
+						sum += emissionСopy[$"{state}{i}"][character];
+					}
+					foreach (var character in alphabet)
+						emissionСopy[$"{state}{i}"][character] /= sum;
+				}
+			}
+			return emissionСopy;
+		}
+
+
 		static void Main(string[] args)
 		{
-			var strings = "ADA.ADA.AAA.ADC.-DA.D-A";
-			var threshold = 0.358;
+			var strings = "AD-C-BEAB.EC-CA-EAB.ACBBABEAB.-BBBAB-AB.AC--C-E-B.ECBC-AE-B.ACBCCB--B";
+			var threshold = 0.27;
 			var sigma = 0.01;
             var matrix = CreateTransitionMatrix(strings.Split('.').ToList(), threshold);
 			var emission = CreateEmissionMatrix(strings.Split('.').ToList(), threshold, new List<char>() {'A', 'B', 'C', 'D', 'E'});
 
 			matrix = AddPseudocountsToTransitionMatrix(matrix, sigma);
+			emission = AddPseudocountsToEmissionMatrix(emission, sigma);
 			using (StreamWriter writetext = new StreamWriter("write.txt"))
 			{
 				writetext.Write($" \t");
