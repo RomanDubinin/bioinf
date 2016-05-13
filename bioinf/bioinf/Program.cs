@@ -348,11 +348,11 @@ namespace bioinf
 				var goToMatch = indexesOfNotInsert.Except(indexesOfNotMatchI1).Count();
 				if (goToInsert + goToMatch + goToDelete != 0)
 				{
-					transition[$"E"][$"I{0}"] = Convert.ToDouble(goToInsert)/
+					transition[$"S"][$"I{0}"] = Convert.ToDouble(goToInsert)/
 					                            (goToInsert + goToMatch + goToDelete);
-					transition[$"E"][$"D{1}"] = Convert.ToDouble(goToDelete)/
+					transition[$"S"][$"D{1}"] = Convert.ToDouble(goToDelete)/
 					                            (goToInsert + goToMatch + goToDelete);
-					transition[$"E"][$"M{1}"] = Convert.ToDouble(goToMatch)/
+					transition[$"S"][$"M{1}"] = Convert.ToDouble(goToMatch)/
 					                            (goToInsert + goToMatch + goToDelete);
 				}
 
@@ -373,17 +373,18 @@ namespace bioinf
 			{
 				var goToDelete = indexesOfNotMatchI1.Count();
 				var goToMatch = indexesOfMatchI1.Count();
-				transition[$"E"][$"D{1}"] = Convert.ToDouble(goToDelete)/n;
-				transition[$"E"][$"M{1}"] = Convert.ToDouble(goToMatch)/n;
+				transition[$"S"][$"D{1}"] = Convert.ToDouble(goToDelete)/n;
+				transition[$"S"][$"M{1}"] = Convert.ToDouble(goToMatch)/n;
 			}
 
 			j = data.Count - 1;
 			indexesOfNotMatch = IndexesOfNotMatch(data[j].Match);
 			indexesOfMatch = fullRange.Except(indexesOfNotMatch);
-			indexesOfNotInsert = IndexesOfNotInsert(data[j].Insertion);
-			indexesOfInsert = fullRange.Except(indexesOfNotInsert);
+			
 			if (data[j].Insertion.Count != 0)
 			{
+				indexesOfNotInsert = IndexesOfNotInsert(data[j].Insertion);
+				indexesOfInsert = fullRange.Except(indexesOfNotInsert);
 				goToInsert = indexesOfMatch.Except(indexesOfNotInsert).Count();
 				var goToE = indexesOfMatch.Except(indexesOfInsert).Count();
 				if (goToInsert + goToE != 0)
@@ -472,8 +473,8 @@ namespace bioinf
 
 		static void Main(string[] args)
 		{
-			var strings = "DCDABACED.DCCA--CA-.DCDAB-CA-.BCDA---A-.BC-ABE-AE";
-			var threshold = 0.252;
+			var strings = "EEDCCCE-A.EEDA-ECAA.E-DAED-AD.EEDAADC-A.E-AA-DCAA.EE--CDCAA";
+			var threshold = 0.209;
             var matrix = CreateTransitionMatrix(strings.Split('.').ToList(), threshold);
 			var emission = CreateEmissionMatrix(strings.Split('.').ToList(), threshold, new List<char>() {'A', 'B', 'C', 'D', 'E'});
 
