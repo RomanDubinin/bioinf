@@ -453,6 +453,19 @@ namespace bioinf
 
 			var emission = CreateEmptyEmissionMatrix(data.Count - 1, alphabet);
 
+			for (var i = 0; i < data.Count; i++)
+			{
+				foreach (var character in alphabet)
+				{
+					if (i >= 1)
+						emission[$"M{i}"][character] = data[i].Match.Count(x => x == character)/
+							Convert.ToDouble(data[i].Match.Count(x => x != '-'));
+					if (data[i].Insertion.Count > 0)
+						emission[$"I{i}"][character] = data[i].Insertion.Sum(column => column.Count(x => x == character))/
+							Convert.ToDouble(data[i].Insertion.Sum(column => column.Count(x => x != '-')));
+				}
+			}
+
 			return emission;
 
 		}
@@ -462,6 +475,8 @@ namespace bioinf
 			var strings = "DCDABACED.DCCA--CA-.DCDAB-CA-.BCDA---A-.BC-ABE-AE";
 			var threshold = 0.252;
             var matrix = CreateTransitionMatrix(strings.Split('.').ToList(), threshold);
+			var emission = CreateEmissionMatrix(strings.Split('.').ToList(), threshold, new List<char>() {'A', 'B', 'C', 'D', 'E'});
+
 			using (StreamWriter writetext = new StreamWriter("write.txt"))
 			{
 				writetext.Write($" \t");
@@ -480,9 +495,28 @@ namespace bioinf
 					}
 					writetext.WriteLine();
 				}
+
+				writetext.WriteLine("--------");
+				writetext.Write($" \t");
+				foreach (var key in emission["S"].Keys)
+				{
+					writetext.Write($"{key}\t");
+				}
+				writetext.WriteLine();
+
+				foreach (var str in emission)
+				{
+					writetext.Write($" {str.Key}\t");
+					foreach (var val in str.Value)
+					{
+						writetext.Write($"{val.Value}\t");
+					}
+					writetext.WriteLine();
+				}
 			}
 
-			var emission = CreateEmissionMatrix(strings.Split('.').ToList(), threshold, new List<char>() {'A', 'B', 'C', 'D', 'E'});
+			
+
 
 		}
 	}
