@@ -471,13 +471,83 @@ namespace bioinf
 
 		}
 
+		static Dictionary<string, Dictionary<string, double>> AddPseudocountsToTransitionMatrix(
+			Dictionary<string, Dictionary<string, double>> transition,
+			double minVal)
+		{
+			var transitionСopy = ExtensionMethods.DeepClone(transition);
+			var n = (transitionСopy.Keys.Count - 3)/3;
+			var keys = new List<char>() {'I', 'M', 'D'};
+
+			foreach (var key in new List<string>() {"S", "I0"})
+			{
+				if (Math.Abs(transitionСopy[key]["I0"]) < minVal)
+					transitionСopy[key]["I0"] = minVal;
+
+				if (Math.Abs(transitionСopy[key]["D1"]) < minVal)
+					transitionСopy[key][$"D{1}"] = minVal;
+
+				if (Math.Abs(transitionСopy[key]["M1"]) < minVal)
+					transitionСopy[key]["M1"] = minVal;
+
+				var sum = transitionСopy[key]["I0"] +
+						  transitionСopy[key]["D1"] +
+						  transitionСopy[key]["M1"];
+
+				transitionСopy[key]["I0"] /= sum;
+				transitionСopy[key]["D1"] /= sum;
+				transitionСopy[key]["M1"] /= sum;
+			}
+			Console.WriteLine(n);
+			for (var i = 1; i < n; i++)
+			{
+				double sum;
+				foreach (var key in keys)
+				{
+					if (Math.Abs(transitionСopy[$"{key}{i}"][$"I{i}"]) < minVal)
+						transitionСopy[$"{key}{i}"][$"I{i}"] = minVal;
+
+					if (Math.Abs(transitionСopy[$"{key}{i}"][$"D{i + 1}"]) < minVal)
+						transitionСopy[$"{key}{i}"][$"D{i + 1}"] = minVal;
+
+					if (Math.Abs(transitionСopy[$"{key}{i}"][$"M{i + 1}"]) < minVal)
+						transitionСopy[$"{key}{i}"][$"M{i + 1}"] = minVal;
+
+					sum = transitionСopy[$"{key}{i}"][$"I{i}"] +
+					      transitionСopy[$"{key}{i}"][$"D{i + 1}"] +
+					      transitionСopy[$"{key}{i}"][$"M{i + 1}"];
+
+					transitionСopy[$"{key}{i}"][$"I{i}"] /= sum;
+					transitionСopy[$"{key}{i}"][$"D{i + 1}"] /= sum;
+					transitionСopy[$"{key}{i}"][$"M{i + 1}"] /= sum;
+				}
+			}
+			foreach (var key in new List<string>() { $"I{n}", $"D{n}", $"M{n}" })
+			{
+				if (Math.Abs(transitionСopy[key]["E"]) < minVal)
+					transitionСopy[key]["E"] = minVal;
+
+				if (Math.Abs(transitionСopy[key][$"I{n}"]) < minVal)
+					transitionСopy[key][$"I{n}"] = minVal;
+
+				var sum = transitionСopy[key]["E"] +
+					  transitionСopy[key][$"I{n}"];
+				transitionСopy[key]["E"] /= sum;
+				transitionСopy[key][$"I{n}"] /= sum;
+			}
+
+			return transitionСopy;
+		}
+
 		static void Main(string[] args)
 		{
-			var strings = "EEDCCCE-A.EEDA-ECAA.E-DAED-AD.EEDAADC-A.E-AA-DCAA.EE--CDCAA";
-			var threshold = 0.209;
+			var strings = "ADA.ADA.AAA.ADC.-DA.D-A";
+			var threshold = 0.358;
+			var sigma = 0.01;
             var matrix = CreateTransitionMatrix(strings.Split('.').ToList(), threshold);
 			var emission = CreateEmissionMatrix(strings.Split('.').ToList(), threshold, new List<char>() {'A', 'B', 'C', 'D', 'E'});
 
+			matrix = AddPseudocountsToTransitionMatrix(matrix, sigma);
 			using (StreamWriter writetext = new StreamWriter("write.txt"))
 			{
 				writetext.Write($" \t");
